@@ -15,10 +15,6 @@ class Question extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function answers(): HasMany
-    {
-        return $this->hasMany(Answer::class);
-    }
 
     public function category(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {

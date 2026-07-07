@@ -23,7 +23,8 @@ class Lead extends Model
         'source_link', 
         'upvotes_count', 
         'downvotes_count', 
-        'last_verified_at'
+        'last_verified_at',
+        'duplicate_of_id',
     ];
 
     protected $casts = [
@@ -46,4 +47,9 @@ class Lead extends Model
     {
         return $this->hasMany(LeadVote::class);
     }
-}
+
+    public function originalLead()
+    {
+        return $this->belongsTo(Lead::class, 'duplicate_of_id');
+    }
+    }

@@ -27,7 +27,7 @@ class Homepage extends Component
     public function render()
     {
         // Start a query builder instance
-        $query = Question::with(['user'])->withCount('answers');
+        $query = Question::with(['user'])->withCount('leads');
 
         // Apply real-time search filtering if something is typed
         if (!empty($this->search)) {

@@ -97,7 +97,7 @@
 
                             <div class="mt-4 pt-3 border-t border-gray-50 flex justify-between items-center text-xs text-gray-500">
                                 <div>By: <span class="font-medium text-gray-700">{{ $question->user->name }}</span></div>
-                                <div class="text-indigo-600 font-medium">💬 {{ $question->answers_count ?? $question->answers->count() }} leads found</div>
+                                <div class="text-indigo-600 font-medium">💬 {{ $question->leads_count ?? $question->leads->count() }} leads found</div>
                             </div>
                         </div>
 
