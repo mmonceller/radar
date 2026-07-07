@@ -3,10 +3,11 @@
 use Illuminate\Support\Facades\Route;
 use App\Livewire\Homepage;
 use App\Livewire\CreateRequest;
+use App\Livewire\ShowRequest;
 // Import the profile controller or views provided by Breeze
 use App\Http\Controllers\ProfileController;
-use App\Livewire\ShowRequest;
 use Livewire\Volt\Volt;
+
 
 Route::get('/', Homepage::class)->name('home');
 
@@ -26,7 +27,6 @@ Route::get('/requests/{request}', ShowRequest::class)->name('requests.show');
 
 // Fallback lookup alias for the named profile route
 Route::get('/profile-view', Homepage::class)->name('profile');
-
 
 
 // Place this completely outside any middleware at the top of routes/web.php to test:

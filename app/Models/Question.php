@@ -24,4 +24,9 @@ class Question extends Model
     {
         return $this->belongsTo(Category::class);
     }
+
+    public function leads(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Lead::class);
+    }
 }

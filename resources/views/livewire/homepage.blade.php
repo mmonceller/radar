@@ -61,9 +61,8 @@
                 @else
                     <div id="requests-grid" class="grid gap-4 md:grid-cols-2">
                         @foreach($questions as $question)
-                        <a href="{{ route('requests.show', $question->id) }}" wire:navigate class="block">
                         <div id="request-card-{{ $question->id }}" class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition flex gap-6">
-                        <!-- 1. IMAGE LAYOUT CONTAINER -->
+                        
                         @if($question->image_path)
                             <div class="w-24 h-24 flex-shrink-0">
                                 <img src="{{ asset('storage/' . $question->image_path) }}" 
@@ -71,16 +70,13 @@
                                     class="w-full h-full object-cover rounded-xl border border-gray-100">
                             </div>
                         @else
-                            <!-- Optional fallback placeholder if no image was uploaded -->
                             <div class="w-24 h-24 flex-shrink-0 bg-gray-50 border border-gray-100 rounded-xl flex items-center justify-center text-gray-300">
                                 📦
                             </div>
                         @endif
 
-                        <!-- CARD BODY INFO -->
                         <div class="flex-1 min-w-0">
                             <div class="flex justify-between items-start">
-                                <!-- 2. FIX FOR THE RAW JSON BADGE: Pull the name column specifically -->
                                 <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-indigo-50 text-indigo-700 uppercase">
                                     {{ $question->category->name ?? 'General' }}
                                 </span>
@@ -89,8 +85,15 @@
                                 </span>
                             </div>
                             
-                            <h2 class="text-xl font-bold text-gray-900 mt-2 truncate">{{ $question->title }}</h2>
-                            <p class="text-gray-500 text-sm truncate mt-1">{{ $question->description ?? 'No extra details provided.' }}</p>
+                            <h2 class="text-xl font-bold text-gray-900 mt-2 truncate hover:text-indigo-600 transition">
+                                <a href="{{ route('requests.show', $question->id) }}" wire:navigate class="block">
+                                    {{ $question->title }}
+                                </a>
+                            </h2>
+                            
+                            <p class="text-gray-500 text-sm truncate mt-1">
+                                {{ $question->description ?? 'No extra details provided.' }}
+                            </p>
 
                             <div class="mt-4 pt-3 border-t border-gray-50 flex justify-between items-center text-xs text-gray-500">
                                 <div>By: <span class="font-medium text-gray-700">{{ $question->user->name }}</span></div>
@@ -99,7 +102,6 @@
                         </div>
 
                     </div>
-                        </a>
                         @endforeach
                     </div>
                 @endif
