@@ -30,6 +30,11 @@ new class extends Component
                     <x-nav-link :href="route('home')" :active="request()->routeIs('home')" wire:navigate>
                         {{ __('Home') }}
                     </x-nav-link>
+                    @auth
+                        <x-nav-link :href="route('posts.manage')" :active="request()->routeIs('posts.manage')" wire:navigate>
+                            {{ __('My Posts') }}
+                        </x-nav-link>
+                    @endauth
                 </div>
             </div>
 
@@ -49,6 +54,10 @@ new class extends Component
                         </x-slot>
 
                         <x-slot name="content">
+                            <x-dropdown-link :href="route('posts.manage')" wire:navigate>
+                                {{ __('My Posts') }}
+                            </x-dropdown-link>
+
                             <x-dropdown-link :href="route('profile')" wire:navigate>
                                 {{ __('Profile') }}
                             </x-dropdown-link>
@@ -84,6 +93,11 @@ new class extends Component
             <x-responsive-nav-link :href="route('home')" :active="request()->routeIs('home')" wire:navigate>
                 {{ __('Home') }}
             </x-responsive-nav-link>
+            @auth
+                <x-responsive-nav-link :href="route('posts.manage')" :active="request()->routeIs('posts.manage')" wire:navigate>
+                    {{ __('My Posts') }}
+                </x-responsive-nav-link>
+            @endauth
         </div>
 
         @auth

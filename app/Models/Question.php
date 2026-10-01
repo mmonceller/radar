@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Question extends Model
 {
@@ -15,14 +16,23 @@ class Question extends Model
         return $this->belongsTo(User::class);
     }
 
-
-    public function category(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
     }
 
-    public function leads(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function leads(): HasMany
     {
         return $this->hasMany(Lead::class);
+    }
+
+    public function followUps(): HasMany
+    {
+        return $this->hasMany(QuestionFollowUp::class);
+    }
+
+    public function awardedLead(): HasOne
+    {
+        return $this->hasOne(Lead::class)->whereNotNull('awarded_at');
     }
 }

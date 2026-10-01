@@ -11,18 +11,18 @@ class Lead extends Model
 
     // Explicitly allow mass assignment for all your new structured fields
     protected $fillable = [
-        'question_id', 
-        'user_id', 
-        'store_name', 
-        'price', 
-        'is_online', 
-        'latitude', 
-        'longitude', 
-        'address', 
-        'description', 
-        'source_link', 
-        'upvotes_count', 
-        'downvotes_count', 
+        'question_id',
+        'user_id',
+        'store_name',
+        'price',
+        'is_online',
+        'latitude',
+        'longitude',
+        'address',
+        'description',
+        'source_link',
+        'upvotes_count',
+        'downvotes_count',
         'last_verified_at',
         'duplicate_of_id',
     ];
@@ -31,6 +31,9 @@ class Lead extends Model
         'is_online' => 'boolean',
         'last_verified_at' => 'datetime',
         'price' => 'decimal:2',
+        'awarded_at' => 'datetime',
+        'purchase_verified_at' => 'datetime',
+        'verified_price' => 'decimal:2',
     ];
 
     public function user()
@@ -52,4 +55,9 @@ class Lead extends Model
     {
         return $this->belongsTo(Lead::class, 'duplicate_of_id');
     }
+
+    public function isAwarded(): bool
+    {
+        return $this->awarded_at !== null;
     }
+}

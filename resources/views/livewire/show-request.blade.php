@@ -1,14 +1,29 @@
 <div class="max-w-5xl mx-auto px-4 py-8">
     
     <div class="mb-6">
-        <a href="{{ route('home') }}" wire:navigate class="inline-flex items-center text-sm font-medium text-gray-500 hover:text-indigo-600 transition">
-            ← Back to Search
+        <a href="{{ $fromPosts ? route('posts.manage') : route('home') }}" wire:navigate class="inline-flex items-center text-sm font-medium text-gray-500 hover:text-indigo-600 transition">
+            ← {{ $fromPosts ? 'Back to My Posts' : 'Back to Search' }}
         </a>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    @if(session('question_updated'))
+        <div class="mb-4 p-3 bg-emerald-50 text-emerald-800 text-sm font-semibold rounded-xl">{{ session('question_updated') }}</div>
+    @endif
+    @if(session('follow_up_notice'))
+        <div class="mb-4 p-3 bg-amber-50 text-amber-900 text-sm font-semibold rounded-xl">{{ session('follow_up_notice') }}</div>
+    @endif
+    @if(session('lead_updated'))
+        <div class="mb-4 p-3 bg-emerald-50 text-emerald-800 text-sm font-semibold rounded-xl">{{ session('lead_updated') }}</div>
+    @endif
+    @if(session('lead_message'))
+        <div class="mb-4 p-3 bg-emerald-50 text-emerald-800 text-sm font-semibold rounded-xl">{{ session('lead_message') }}</div>
+    @endif
+
+    @php $viewerCanProvideLead = auth()->check() && auth()->id() !== $itemRequest->user_id; @endphp
+
+    <div class="grid grid-cols-1 {{ $viewerCanProvideLead ? 'lg:grid-cols-3' : '' }} gap-8">
         
-        <div class="lg:col-span-2 space-y-6">
+        <div class="{{ $viewerCanProvideLead ? 'lg:col-span-2' : '' }} space-y-6">
             <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100">
                 
                 <div class="flex items-center justify-between border-b border-gray-50 pb-4 mb-6">
@@ -32,13 +47,22 @@
                 <div class="mt-6 pt-6 border-t border-gray-100">
                     <p class="text-gray-600 text-sm md:text-base whitespace-pre-line leading-relaxed">{{ $itemRequest->description }}</p>
                 </div>
+
+                <livewire:questions.follow-ups :question="$itemRequest" :from-posts="$fromPosts" :key="'show-follow-ups-'.$itemRequest->id" />
             </div>
 
             <div class="space-y-4">
                 <h3 class="text-lg font-bold text-gray-900">Community Leads ({{ $leads->count() }})</h3>
+
+                @if($awardedLead)
+                    <div class="bg-amber-50 border border-amber-200 text-amber-900 text-sm rounded-xl p-4">
+                        <i class="fa-solid fa-star"></i>
+                        Verified purchase at {{ $awardedLead->store_name }} for ₱{{ number_format((float) $awardedLead->verified_price, 2) }}.
+                    </div>
+                @endif
                 
                 @forelse($leads as $lead)
-                    <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex gap-4 items-start">
+                    <div wire:key="lead-card-{{ $lead->id }}" class="bg-white p-6 rounded-xl border {{ $lead->isAwarded() ? 'border-amber-300 ring-1 ring-amber-200' : 'border-gray-100' }} shadow-sm flex gap-4 items-start relative">
 
                         @if($lead->duplicate_of_id)
                             <div class="absolute top-0 right-0 bg-amber-500 text-white text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-bl-xl rounded-tr-xl">
@@ -56,7 +80,11 @@
 
                         <div class="flex-1 min-w-0">
                             <div class="text-xs text-gray-400 flex flex-wrap justify-between items-center gap-2 mb-2">
-                                <div>By <span class="font-semibold text-gray-700">{{ $lead->user->name }}</span> • {{ $lead->created_at->diffForHumans() }}</div>
+                                <div>By <span class="font-semibold text-gray-700">{{ $lead->user->name }}</span> • {{ $lead->created_at->diffForHumans() }}
+                                    @if(auth()->id() === $lead->user_id)
+                                        · <a href="{{ route('leads.edit', $lead) }}" wire:navigate class="text-indigo-600 font-semibold hover:underline">Edit</a>
+                                    @endif
+                                </div>
                                 @if($lead->last_verified_at)
                                     <div class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-[11px] font-medium">
                                         ⏱️ Last verified {{ $lead->last_verified_at->diffForHumans() }}
@@ -95,6 +123,10 @@
                                     <i class="fa-solid fa-link"></i>&nbsp; {{ $lead->source_link }} &nbsp;<i class="fa-solid fa-arrow-up-right-from-square"></i>
                                 </a>
                             @endif
+
+                            <div class="mt-4">
+                                <livewire:leads.award-lead :lead="$lead" :key="'award-lead-'.$lead->id" />
+                            </div>
 
                             <!-- CORE INFO WRAPPER COLUMN -->
                             <div class="flex-1 min-w-0">
@@ -169,79 +201,13 @@
             </div>
         </div>
 
+        @if($viewerCanProvideLead)
         <div class="space-y-6">
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 sticky top-6">
                 <h3 class="text-lg font-bold text-gray-900 border-b border-gray-50 pb-3 mb-4">Provide a Location Lead</h3>
-                
-                @if (session()->has('lead_message'))
-                    <div class="mb-4 p-3 bg-emerald-50 text-emerald-800 text-xs font-semibold rounded-lg">
-                        {{ session('lead_message') }}
-                    </div>
-                @endif
 
                 <form wire:submit.prevent="submitLead" class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Store Name <span class="text-red-500">*</span></label>
-                        <input type="text" wire:model="store_name" placeholder="Target, Store, Amazon..." class="w-full text-sm p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 @error('store_name') border-red-500 @enderror">
-                        @error('store_name') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
-                    </div>
-
-                    @if($this->is_online)
-                        <div class="bg-blue-50/50 p-3 rounded-xl border border-blue-100/60 space-y-1 animate-fade-in">
-                            <label class="block text-xs font-bold text-blue-900 uppercase tracking-wider mb-1">Website URL <span class="text-red-500">*</span></label>
-                            <input type="url" wire:model="source_link" placeholder="https://amazon.com/item-path..." class="w-full text-sm p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 @error('source_link') border-red-500 @enderror">
-                            @error('source_link') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
-                        </div>
-                    @endif
-
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Price <span class="text-red-500">*</span></label>
-                        <div class="relative">
-                            <span class="absolute left-3 top-3 text-gray-400 text-sm font-semibold">₱</span>
-                            <input type="number" step="0.01" wire:model="price" placeholder="0.00" class="w-full text-sm p-3 pl-7 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 @error('price') border-red-500 @enderror">
-                        </div>
-                        @error('price') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Shop Type</label>
-                        <div class="grid grid-cols-2 gap-2 p-1 bg-gray-50 rounded-xl border border-gray-100">
-                            <button type="button" wire:click="changeShopType(false)" class="py-2 text-xs font-bold rounded-lg transition {{ !$this->is_online ? 'bg-white shadow text-indigo-600' : 'text-gray-500' }}">
-                                <i class="fa-solid fa-store"></i> Brick & Mortar
-                            </button>
-                            <button type="button" wire:click="changeShopType(true)" class="py-2 text-xs font-bold rounded-lg transition {{ $this->is_online ? 'bg-white shadow text-indigo-600' : 'text-gray-500' }}">
-                                <i class="fa-solid fa-globe"></i> Online Store
-                            </button>
-                        </div>
-                    </div>
-
-                    @if(!$this->is_online)
-                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 space-y-3">
-                            <div class="text-xs font-bold text-slate-700 flex items-center gap-1">
-                                <i class="fa-solid fa-location-dot"></i> Pin Coordinates <span class="text-red-500">*</span>
-                            </div>
-                            <div class="grid grid-cols-2 gap-2">
-                                <div>
-                                    <input type="text" wire:model="latitude" placeholder="Latitude" class="w-full text-xs p-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 @error('latitude') border-red-500 @enderror">
-                                    @error('latitude') <span class="text-red-500 text-[10px] mt-0.5 block">{{ $message }}</span> @enderror
-                                </div>
-                                <div>
-                                    <input type="text" wire:model="longitude" placeholder="Longitude" class="w-full text-xs p-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 @error('longitude') border-red-500 @enderror">
-                                    @error('longitude') <span class="text-red-500 text-[10px] mt-0.5 block">{{ $message }}</span> @enderror
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block text-[11px] font-semibold text-gray-500 mb-1">Street Address Details (Optional)</label>
-                                <input type="text" wire:model="address" placeholder="e.g., Greenbelt Mall, Wing B" class="w-full text-xs p-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500">
-                            </div>
-                        </div>
-                    @endif
-
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Notes / Description <span class="text-gray-400 font-normal">(Optional)</span></label>
-                        <textarea wire:model="description" rows="3" placeholder="Stock status, availability notes, shelf directions..." class="w-full text-sm p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 @error('description') border-red-500 @enderror"></textarea>
-                        @error('description') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
-                    </div>
+                    @include('livewire.leads.partials.fields')
 
                     <button type="submit" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-sm shadow-sm transition">
                         Submit Verified Lead Info
@@ -249,6 +215,7 @@
                 </form>
             </div>
         </div>
+        @endif
 
     </div>
 </div>
