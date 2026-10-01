@@ -70,12 +70,13 @@
                             </div>
                         @endif
                         
+                        @php $myVote = auth()->check() ? $lead->votes->firstWhere('user_id', auth()->id()) : null; @endphp
                         <div class="flex flex-col items-center space-y-1 bg-gray-50 p-2 rounded-lg flex-shrink-0">
-                            <button wire:click="vote({{ $lead->id }}, 1)" class="p-1 rounded text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 transition"><i class="fa-regular fa-thumbs-up"></i></button>
+                            <button wire:click="vote({{ $lead->id }}, 1)" class="p-1 rounded transition {{ $myVote && (int) $myVote->type === 1 ? 'text-emerald-600' : 'text-gray-400 hover:text-emerald-600 hover:bg-emerald-50' }}"><i class="fa-regular fa-thumbs-up"></i></button>
                             <span class="text-sm font-bold {{ ($lead->upvotes_count - $lead->downvotes_count) >= 0 ? 'text-gray-700' : 'text-red-500' }}">
                                 {{ $lead->upvotes_count - $lead->downvotes_count }}
                             </span>
-                            <button wire:click="vote({{ $lead->id }}, -1)" class="p-1 rounded text-gray-400 hover:text-rose-600 hover:bg-rose-50 transition"><i class="fa-regular fa-thumbs-down"></i></button>
+                            <button wire:click="startDownvote({{ $lead->id }})" class="p-1 rounded transition {{ ($myVote && (int) $myVote->type === -1) || (int) $downvotingLeadId === $lead->id ? 'text-rose-600' : 'text-gray-400 hover:text-rose-600 hover:bg-rose-50' }}"><i class="fa-regular fa-thumbs-down"></i></button>
                         </div>
 
                         <div class="flex-1 min-w-0">
@@ -122,6 +123,14 @@
                                 <a href="{{ $lead->source_link }}" target="_blank" class="inline-flex items-center text-xs font-semibold text-indigo-600 hover:underline mt-3">
                                     <i class="fa-solid fa-link"></i>&nbsp; {{ $lead->source_link }} &nbsp;<i class="fa-solid fa-arrow-up-right-from-square"></i>
                                 </a>
+                            @endif
+
+                            @if((int) $downvotingLeadId === $lead->id)
+                                @include('livewire.leads.partials.downvote-form')
+                            @endif
+
+                            @if(auth()->id() === $lead->user_id)
+                                @include('livewire.leads.partials.downvote-notes', ['notes' => $downvoteNotes[$lead->id] ?? collect()])
                             @endif
 
                             <div class="mt-4">

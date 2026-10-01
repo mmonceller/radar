@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Manage;
 
+use App\Leads\DownvoteNotes;
 use App\Models\Lead;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -28,6 +29,10 @@ class MyPosts extends Component
     public function render()
     {
         $user = Auth::user();
+        $leads = $user->leads()
+            ->with(['question', 'votes'])
+            ->latest()
+            ->get();
 
         return view('livewire.manage.my-posts', [
             'questions' => $user->questions()
@@ -38,10 +43,10 @@ class MyPosts extends Component
                 ])
                 ->latest()
                 ->get(),
-            'leads' => $user->leads()
-                ->with('question')
-                ->latest()
-                ->get(),
+            'leads' => $leads,
+            'downvoteNotes' => $leads->mapWithKeys(fn (Lead $lead) => [
+                $lead->id => DownvoteNotes::forLead($lead),
+            ]),
         ])->layout('layouts.app');
     }
 }

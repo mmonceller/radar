@@ -89,6 +89,7 @@
                             @if($lead->isAwarded())
                                 <p class="text-xs text-amber-800 mt-2">The requester verified a purchase here, so this lead stays until they remove the award.</p>
                             @endif
+                            @include('livewire.leads.partials.downvote-notes', ['notes' => $downvoteNotes[$lead->id] ?? collect()])
                         </div>
                         <div class="flex items-center gap-3 text-sm font-semibold">
                             <a href="{{ route('leads.edit', $lead) }}" wire:navigate class="text-indigo-600 hover:underline">Edit</a>

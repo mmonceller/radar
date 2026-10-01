@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Leads\DownvoteReason;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -9,11 +10,16 @@ class LeadVote extends Model
 {
     use HasFactory;
 
-    // Add this fillable array to authorize mass assignment
     protected $fillable = [
         'lead_id',
         'user_id',
-        'type'
+        'type',
+        'reason',
+        'explanation',
+    ];
+
+    protected $casts = [
+        'reason' => DownvoteReason::class,
     ];
 
     public function user()
