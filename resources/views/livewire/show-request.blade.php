@@ -36,8 +36,8 @@
                 </div>
 
                 @if($itemRequest->image_path)
-                    <div class="w-full max-h-[400px] overflow-hidden rounded-xl border border-gray-100 mb-6 bg-gray-50">
-                        <img src="{{ asset('storage/' . $itemRequest->image_path) }}" alt="{{ $itemRequest->title }}" class="w-full h-full object-contain mx-auto">
+                    <div class="w-full max-h-[400px] flex justify-center rounded-xl border border-gray-100 mb-6 bg-gray-50">
+                        <img src="{{ asset('storage/' . $itemRequest->image_path) }}" alt="{{ $itemRequest->title }}" class="block max-h-[400px] max-w-full object-contain mx-auto">
                     </div>
                 @endif
 
